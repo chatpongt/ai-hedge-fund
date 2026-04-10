@@ -10,10 +10,10 @@ class MLXConfig:
     """Local MLX model server configuration."""
 
     base_url: str = "http://localhost:8080/v1"
-    main_model: str = "mlx-community/Qwen3-32B-4bit"
+    main_model: str = "mlx-community/Qwen3-8B-4bit"
     fast_model: str = "mlx-community/Qwen3-4B-4bit"
-    reasoning_model: str = "mlx-community/DeepSeek-R1-Distill-Qwen-32B-4bit"
-    timeout: int = 300  # seconds — large models can be slow
+    reasoning_model: str = "mlx-community/DeepSeek-R1-Distill-Qwen-14B-4bit"
+    timeout: int = 180  # seconds
     max_retries: int = 2
 
 

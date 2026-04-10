@@ -26,7 +26,7 @@ class TestMLXAdapter:
     def test_init_defaults(self):
         adapter = MLXAdapter()
         assert "localhost:8080" in adapter.base_url
-        assert adapter.timeout == 300
+        assert adapter.timeout == 180
 
     def test_init_custom_url(self):
         adapter = MLXAdapter(base_url="http://192.168.1.100:9090/v1")

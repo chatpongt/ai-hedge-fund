@@ -32,9 +32,9 @@ info() { echo -e "${BLUE}[i]${NC} $*"; }
 # ── Config ────────────────────────────────────────────────────
 MLX_PORT=8080
 MLX_HOST="127.0.0.1"
-MAIN_MODEL="mlx-community/Qwen3-32B-4bit"
+MAIN_MODEL="mlx-community/Qwen3-8B-4bit"
 FAST_MODEL="mlx-community/Qwen3-4B-4bit"
-REASONING_MODEL="mlx-community/DeepSeek-R1-Distill-Qwen-32B-4bit"
+REASONING_MODEL="mlx-community/DeepSeek-R1-Distill-Qwen-14B-4bit"
 
 # ── Prerequisites ─────────────────────────────────────────────
 check_prerequisites() {
