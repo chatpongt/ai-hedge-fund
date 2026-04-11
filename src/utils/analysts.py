@@ -1,4 +1,4 @@
-"""Constants and utilities related to analysts configuration."""
+"""Constants and utilities related to analysts and skills configuration."""
 
 from src.agents import portfolio_manager
 from src.agents.aswath_damodaran import aswath_damodaran_agent
@@ -215,6 +215,88 @@ ANALYST_CONFIG = {
     },
 }
 
+# Define skill configuration for non-analyst capabilities
+SKILL_CONFIG = {
+    # --- Knowledge System Skills (type: knowledge) ---
+    "wiki": {
+        "display_name": "Wiki Knowledge Graph",
+        "description": "Zettelkasten-inspired knowledge graph with [[wiki links]]",
+        "module": "src.knowledge.graph",
+        "type": "knowledge",
+        "order": 100,
+        "slash_command": "/wiki",
+        "trigger": "Use when creating, linking, or browsing knowledge notes with [[wiki links]], building knowledge graph topology, or traversing connected notes via BFS/spreading activation.",
+    },
+    "learn": {
+        "display_name": "Agent Memory & Learning",
+        "description": "Persistent memory system for agents to record and recall knowledge",
+        "module": "src.knowledge.agent_memory",
+        "type": "knowledge",
+        "order": 101,
+        "slash_command": "/learn",
+        "trigger": "Use when agents need to record signals, insights, or analysis results as persistent notes, or recall prior knowledge before running a new analysis.",
+    },
+    "recall": {
+        "display_name": "Knowledge Retrieval",
+        "description": "Multi-strategy search and retrieval over the knowledge graph",
+        "module": "src.knowledge.retrieval",
+        "type": "knowledge",
+        "order": 102,
+        "slash_command": "/recall",
+        "trigger": "Use when searching for prior analysis by ticker, agent, or keyword, finding related notes via spreading activation, or identifying knowledge gaps.",
+    },
+    "moc": {
+        "display_name": "Map of Content",
+        "description": "Auto-generated index notes that organize knowledge by topic",
+        "module": "src.knowledge.moc",
+        "type": "knowledge",
+        "order": 103,
+        "slash_command": "/moc",
+        "trigger": "Use when creating or updating curated index notes for a ticker or agent, organizing knowledge into sections, or generating entry points for exploration.",
+    },
+    "store": {
+        "display_name": "Knowledge Store",
+        "description": "Persistent JSON-based storage for saving and loading knowledge",
+        "module": "src.knowledge.store",
+        "type": "knowledge",
+        "order": 104,
+        "slash_command": "/store",
+        "trigger": "Use when saving knowledge graph to disk, loading prior session data, or managing persistent note storage across sessions.",
+    },
+    # --- System Agent Skills (type: system) ---
+    "risk_manager": {
+        "display_name": "Risk Manager",
+        "description": "Volatility-adjusted position sizing and risk controls",
+        "module": "src.agents.risk_manager",
+        "type": "system",
+        "order": 200,
+        "slash_command": "/risk",
+        "trigger": "Use automatically after all analysts complete. Calculates position limits based on portfolio volatility, correlation analysis, drawdown constraints, and per-ticker risk metrics.",
+    },
+    "portfolio_manager": {
+        "display_name": "Portfolio Manager",
+        "description": "Final trading decision maker with order generation",
+        "module": "src.agents.portfolio_manager",
+        "type": "system",
+        "order": 201,
+        "slash_command": "/portfolio",
+        "trigger": "Use automatically after risk manager completes. Makes final buy/sell/short/cover/hold decisions per ticker based on aggregated analyst signals and risk limits.",
+    },
+    # --- Tool Skills (type: tool) ---
+    "backtest": {
+        "display_name": "Backtesting Engine",
+        "description": "Historical simulation engine with performance metrics",
+        "module": "src.backtesting.engine",
+        "type": "tool",
+        "order": 300,
+        "slash_command": "/backtest",
+        "trigger": "Use when running historical simulations over a date range, evaluating strategy performance (Sharpe, Sortino, max drawdown), or comparing results against benchmarks.",
+    },
+}
+
+# Merge all configs into a unified registry
+ALL_SKILLS_CONFIG = {**ANALYST_CONFIG, **SKILL_CONFIG}
+
 # Derive ANALYST_ORDER from ANALYST_CONFIG for backwards compatibility
 ANALYST_ORDER = [(config["display_name"], key) for key, config in sorted(ANALYST_CONFIG.items(), key=lambda x: x[1]["order"])]
 
@@ -238,6 +320,31 @@ def get_agents_list():
         }
         for key, config in sorted(ANALYST_CONFIG.items(), key=lambda x: x[1]["order"])
     ]
+
+
+def get_skills_list():
+    """Get the list of all skills (analysts + knowledge + system + tools) for API responses."""
+    return [
+        {
+            "key": key,
+            "display_name": config["display_name"],
+            "description": config["description"],
+            "type": config["type"],
+            "slash_command": config["slash_command"],
+            "trigger": config["trigger"],
+            "order": config["order"],
+        }
+        for key, config in sorted(ALL_SKILLS_CONFIG.items(), key=lambda x: x[1]["order"])
+    ]
+
+
+def get_skill_by_slash_command(command: str) -> str | None:
+    """Look up any skill key by its slash command (e.g. '/buffett' -> 'warren_buffett', '/wiki' -> 'wiki')."""
+    cmd = command if command.startswith("/") else f"/{command}"
+    for key, config in ALL_SKILLS_CONFIG.items():
+        if config["slash_command"] == cmd:
+            return key
+    return None
 
 
 def get_analyst_by_slash_command(command: str) -> str | None:
