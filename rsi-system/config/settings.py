@@ -34,7 +34,7 @@ class PathConfig:
     """File system paths."""
 
     project_root: Path = field(default_factory=lambda: Path(__file__).parent.parent)
-    wiki_dir: Path = field(default_factory=lambda: Path("/mnt/outputs/wiki"))
+    wiki_dir: Path = field(default_factory=lambda: Path(__file__).parent.parent / "outputs" / "wiki")
     bloomberg_drop: Path = field(default_factory=lambda: Path.home() / "Downloads" / "bloomberg_drop")
     logs_dir: Path = field(default_factory=lambda: Path(__file__).parent.parent / "logs")
     prompts_dir: Path = field(default_factory=lambda: Path(__file__).parent.parent / "skills" / "prompts")

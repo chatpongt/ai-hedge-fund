@@ -80,7 +80,7 @@ rsi-system/
 
 External paths:
 ```
-/mnt/outputs/wiki/          ← persistent knowledge base (git-tracked)
+rsi-system/outputs/wiki/    ← persistent knowledge base (git-tracked)
 ~/Downloads/bloomberg_drop/ ← Bloomberg CSV drop folder
 ```
 
