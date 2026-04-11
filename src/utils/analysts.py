@@ -30,6 +30,7 @@ ANALYST_CONFIG = {
         "agent_func": aswath_damodaran_agent,
         "type": "analyst",
         "order": 0,
+        "trigger": "Use when performing DCF or intrinsic value analysis, estimating cost of capital (WACC/CAPM), or comparing relative valuation multiples across sectors.",
     },
     "ben_graham": {
         "display_name": "Ben Graham",
@@ -38,6 +39,7 @@ ANALYST_CONFIG = {
         "agent_func": ben_graham_agent,
         "type": "analyst",
         "order": 1,
+        "trigger": "Use when screening for undervalued stocks with a margin of safety, analyzing earnings stability, or evaluating conservative financial strength criteria.",
     },
     "bill_ackman": {
         "display_name": "Bill Ackman",
@@ -46,6 +48,7 @@ ANALYST_CONFIG = {
         "agent_func": bill_ackman_agent,
         "type": "analyst",
         "order": 2,
+        "trigger": "Use when analyzing companies with potential for activist intervention, corporate restructuring opportunities, or hidden value that can be unlocked through strategic changes.",
     },
     "cathie_wood": {
         "display_name": "Cathie Wood",
@@ -54,6 +57,7 @@ ANALYST_CONFIG = {
         "agent_func": cathie_wood_agent,
         "type": "analyst",
         "order": 3,
+        "trigger": "Use when evaluating disruptive technology stocks, innovation-driven companies (AI, genomics, fintech, robotics), or high-growth sectors with exponential potential.",
     },
     "charlie_munger": {
         "display_name": "Charlie Munger",
@@ -62,6 +66,7 @@ ANALYST_CONFIG = {
         "agent_func": charlie_munger_agent,
         "type": "analyst",
         "order": 4,
+        "trigger": "Use when evaluating business quality using mental models, assessing competitive moats, management integrity, or applying rational multi-disciplinary analysis.",
     },
     "michael_burry": {
         "display_name": "Michael Burry",
@@ -70,6 +75,7 @@ ANALYST_CONFIG = {
         "agent_func": michael_burry_agent,
         "type": "analyst",
         "order": 5,
+        "trigger": "Use when looking for contrarian or short opportunities, detecting overvalued markets, analyzing distressed assets, or identifying systemic risks and bubbles.",
     },
     "mohnish_pabrai": {
         "display_name": "Mohnish Pabrai",
@@ -78,6 +84,7 @@ ANALYST_CONFIG = {
         "agent_func": mohnish_pabrai_agent,
         "type": "analyst",
         "order": 6,
+        "trigger": "Use when seeking low-risk high-reward asymmetric bets, cloning successful investor strategies, or evaluating simple businesses with durable competitive advantages.",
     },
     "nassim_taleb": {
         "display_name": "Nassim Taleb",
@@ -86,6 +93,7 @@ ANALYST_CONFIG = {
         "agent_func": nassim_taleb_agent,
         "type": "analyst",
         "order": 7,
+        "trigger": "Use when assessing tail risk exposure, evaluating antifragility of a company, building barbell portfolios, or seeking convex positions with limited downside and unlimited upside.",
     },
     "peter_lynch": {
         "display_name": "Peter Lynch",
@@ -94,6 +102,7 @@ ANALYST_CONFIG = {
         "agent_func": peter_lynch_agent,
         "type": "analyst",
         "order": 8,
+        "trigger": "Use when searching for growth at a reasonable price (GARP), classifying stocks by category (stalwart, fast grower, turnaround), or evaluating PEG ratios and earnings growth.",
     },
     "phil_fisher": {
         "display_name": "Phil Fisher",
@@ -102,6 +111,7 @@ ANALYST_CONFIG = {
         "agent_func": phil_fisher_agent,
         "type": "analyst",
         "order": 9,
+        "trigger": "Use when evaluating management quality, R&D effectiveness, product innovation pipeline, or performing qualitative scuttlebutt analysis on competitive positioning.",
     },
     "rakesh_jhunjhunwala": {
         "display_name": "Rakesh Jhunjhunwala",
@@ -110,6 +120,7 @@ ANALYST_CONFIG = {
         "agent_func": rakesh_jhunjhunwala_agent,
         "type": "analyst",
         "order": 10,
+        "trigger": "Use when analyzing emerging market opportunities, macro-driven sector bets, domestic consumption themes, or high-growth cyclical sectors with strong tailwinds.",
     },
     "stanley_druckenmiller": {
         "display_name": "Stanley Druckenmiller",
@@ -118,6 +129,7 @@ ANALYST_CONFIG = {
         "agent_func": stanley_druckenmiller_agent,
         "type": "analyst",
         "order": 11,
+        "trigger": "Use when analyzing macroeconomic trends, interest rate impacts, currency movements, commodity cycles, or making top-down sector allocation decisions.",
     },
     "warren_buffett": {
         "display_name": "Warren Buffett",
@@ -126,6 +138,7 @@ ANALYST_CONFIG = {
         "agent_func": warren_buffett_agent,
         "type": "analyst",
         "order": 12,
+        "trigger": "Use when evaluating durable competitive moats, owner earnings, return on equity consistency, or assessing long-term compounding potential of high-quality businesses.",
     },
     "technical_analyst": {
         "display_name": "Technical Analyst",
@@ -134,6 +147,7 @@ ANALYST_CONFIG = {
         "agent_func": technical_analyst_agent,
         "type": "analyst",
         "order": 13,
+        "trigger": "Use when analyzing price trends, chart patterns, momentum indicators (RSI, MACD, Bollinger Bands), or determining entry/exit timing based on technical signals.",
     },
     "fundamentals_analyst": {
         "display_name": "Fundamentals Analyst",
@@ -142,6 +156,7 @@ ANALYST_CONFIG = {
         "agent_func": fundamentals_analyst_agent,
         "type": "analyst",
         "order": 14,
+        "trigger": "Use when analyzing profitability ratios (ROE, margins), financial health (debt, liquidity), growth metrics, or screening stocks by fundamental valuation ratios (P/E, P/B, P/S).",
     },
     "growth_analyst": {
         "display_name": "Growth Analyst",
@@ -150,6 +165,7 @@ ANALYST_CONFIG = {
         "agent_func": growth_analyst_agent,
         "type": "analyst",
         "order": 15,
+        "trigger": "Use when evaluating revenue/earnings growth trends, PEG ratios, margin expansion trajectories, insider conviction signals, or assessing growth sustainability.",
     },
     "news_sentiment_analyst": {
         "display_name": "News Sentiment Analyst",
@@ -158,6 +174,7 @@ ANALYST_CONFIG = {
         "agent_func": news_sentiment_agent,
         "type": "analyst",
         "order": 16,
+        "trigger": "Use when analyzing recent news headlines for sentiment (positive/negative/neutral), detecting market-moving events, or gauging media perception of a stock.",
     },
     "sentiment_analyst": {
         "display_name": "Sentiment Analyst",
@@ -166,6 +183,7 @@ ANALYST_CONFIG = {
         "agent_func": sentiment_analyst_agent,
         "type": "analyst",
         "order": 17,
+        "trigger": "Use when analyzing insider trading patterns (buy/sell ratios), combining insider activity with news sentiment, or detecting institutional conviction shifts.",
     },
     "valuation_analyst": {
         "display_name": "Valuation Analyst",
@@ -174,6 +192,7 @@ ANALYST_CONFIG = {
         "agent_func": valuation_analyst_agent,
         "type": "analyst",
         "order": 18,
+        "trigger": "Use when performing multi-method valuation (DCF, owner earnings, EV/EBITDA, residual income), calculating WACC, or running scenario-based fair value estimates.",
     },
 }
 
@@ -194,7 +213,8 @@ def get_agents_list():
             "display_name": config["display_name"],
             "description": config["description"],
             "investing_style": config["investing_style"],
-            "order": config["order"]
+            "trigger": config["trigger"],
+            "order": config["order"],
         }
         for key, config in sorted(ANALYST_CONFIG.items(), key=lambda x: x[1]["order"])
     ]
