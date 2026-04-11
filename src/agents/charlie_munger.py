@@ -11,7 +11,7 @@ from src.utils.api_key import get_api_key_from_state
 
 class CharlieMungerSignal(BaseModel):
     signal: Literal["bullish", "bearish", "neutral"]
-    confidence: int
+    confidence: float
     reasoning: str
 
 

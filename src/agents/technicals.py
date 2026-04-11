@@ -1,6 +1,8 @@
 import math
 
 from langchain_core.messages import HumanMessage
+from pydantic import BaseModel
+from typing_extensions import Literal
 
 from src.graph.state import AgentState, show_agent_reasoning
 from src.utils.api_key import get_api_key_from_state
@@ -10,6 +12,12 @@ import numpy as np
 
 from src.tools.api import get_prices, prices_to_df
 from src.utils.progress import progress
+
+
+class TechnicalAnalystSignal(BaseModel):
+    signal: Literal["bullish", "bearish", "neutral"]
+    confidence: float
+    reasoning: dict
 
 
 def safe_float(value, default=0.0):
@@ -104,10 +112,10 @@ def technical_analyst_agent(state: AgentState, agent_id: str = "technical_analys
         )
 
         # Generate detailed analysis report for this ticker
-        technical_analysis[ticker] = {
-            "signal": combined_signal["signal"],
-            "confidence": round(combined_signal["confidence"] * 100),
-            "reasoning": {
+        technicals_output = TechnicalAnalystSignal(
+            signal=combined_signal["signal"],
+            confidence=round(combined_signal["confidence"] * 100),
+            reasoning={
                 "trend_following": {
                     "signal": trend_signals["signal"],
                     "confidence": round(trend_signals["confidence"] * 100),
@@ -134,6 +142,11 @@ def technical_analyst_agent(state: AgentState, agent_id: str = "technical_analys
                     "metrics": normalize_pandas(stat_arb_signals["metrics"]),
                 },
             },
+        )
+        technical_analysis[ticker] = {
+            "signal": technicals_output.signal,
+            "confidence": technicals_output.confidence,
+            "reasoning": technicals_output.reasoning,
         }
         progress.update_status(agent_id, ticker, "Done", analysis=json.dumps(technical_analysis, indent=4))
 
@@ -152,7 +165,7 @@ def technical_analyst_agent(state: AgentState, agent_id: str = "technical_analys
     progress.update_status(agent_id, None, "Done")
 
     return {
-        "messages": state["messages"] + [message],
+        "messages": [message],
         "data": data,
     }
 

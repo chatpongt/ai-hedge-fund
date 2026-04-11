@@ -1,4 +1,6 @@
 from langchain_core.messages import HumanMessage
+from pydantic import BaseModel
+from typing_extensions import Literal
 from src.graph.state import AgentState, show_agent_reasoning
 from src.utils.progress import progress
 import pandas as pd
@@ -6,6 +8,12 @@ import numpy as np
 import json
 from src.utils.api_key import get_api_key_from_state
 from src.tools.api import get_insider_trades, get_company_news
+
+
+class SentimentAnalystSignal(BaseModel):
+    signal: Literal["bullish", "bearish", "neutral"]
+    confidence: float
+    reasoning: dict
 
 
 ##### Sentiment Agent #####
@@ -109,10 +117,15 @@ def sentiment_analyst_agent(state: AgentState, agent_id: str = "sentiment_analys
             }
         }
 
+        sentiment_output = SentimentAnalystSignal(
+            signal=overall_signal,
+            confidence=confidence,
+            reasoning=reasoning,
+        )
         sentiment_analysis[ticker] = {
-            "signal": overall_signal,
-            "confidence": confidence,
-            "reasoning": reasoning,
+            "signal": sentiment_output.signal,
+            "confidence": sentiment_output.confidence,
+            "reasoning": sentiment_output.reasoning,
         }
 
         progress.update_status(agent_id, ticker, "Done", analysis=json.dumps(reasoning, indent=4))

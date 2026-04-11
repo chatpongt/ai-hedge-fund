@@ -1,7 +1,7 @@
 from src.graph.state import AgentState, show_agent_reasoning
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 import json
 from typing_extensions import Literal
 from src.tools.api import get_financial_metrics, get_market_cap, search_line_items
@@ -12,8 +12,8 @@ from src.utils.api_key import get_api_key_from_state
 
 class WarrenBuffettSignal(BaseModel):
     signal: Literal["bullish", "bearish", "neutral"]
-    confidence: int = Field(description="Confidence 0-100")
-    reasoning: str = Field(description="Reasoning for the decision")
+    confidence: float
+    reasoning: str
 
 
 def warren_buffett_agent(state: AgentState, agent_id: str = "warren_buffett_agent"):

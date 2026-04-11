@@ -8,6 +8,8 @@ Implements a growth-focused valuation methodology.
 import json
 import statistics
 from langchain_core.messages import HumanMessage
+from pydantic import BaseModel
+from typing_extensions import Literal
 from src.graph.state import AgentState, show_agent_reasoning
 from src.utils.progress import progress
 from src.utils.api_key import get_api_key_from_state
@@ -15,6 +17,12 @@ from src.tools.api import (
     get_financial_metrics,
     get_insider_trades,
 )
+
+
+class GrowthAnalystSignal(BaseModel):
+    signal: Literal["bullish", "bearish", "neutral"]
+    confidence: float
+    reasoning: dict
 
 def growth_analyst_agent(state: AgentState, agent_id: str = "growth_analyst_agent"):
     """Run growth analysis across tickers and write signals back to `state`."""
@@ -112,10 +120,15 @@ def growth_analyst_agent(state: AgentState, agent_id: str = "growth_analyst_agen
             }
         }
 
+        growth_output = GrowthAnalystSignal(
+            signal=signal,
+            confidence=confidence,
+            reasoning=reasoning,
+        )
         growth_analysis[ticker] = {
-            "signal": signal,
-            "confidence": confidence,
-            "reasoning": reasoning,
+            "signal": growth_output.signal,
+            "confidence": growth_output.confidence,
+            "reasoning": growth_output.reasoning,
         }
         progress.update_status(agent_id, ticker, "Done", analysis=json.dumps(reasoning, indent=4))
 

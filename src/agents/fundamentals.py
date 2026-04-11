@@ -1,10 +1,18 @@
 from langchain_core.messages import HumanMessage
+from pydantic import BaseModel
+from typing_extensions import Literal
 from src.graph.state import AgentState, show_agent_reasoning
 from src.utils.api_key import get_api_key_from_state
 from src.utils.progress import progress
 import json
 
 from src.tools.api import get_financial_metrics
+
+
+class FundamentalsSignal(BaseModel):
+    signal: Literal["bullish", "bearish", "neutral"]
+    confidence: float
+    reasoning: dict
 
 
 ##### Fundamental Agent #####
@@ -134,10 +142,15 @@ def fundamentals_analyst_agent(state: AgentState, agent_id: str = "fundamentals_
         total_signals = len(signals)
         confidence = round(max(bullish_signals, bearish_signals) / total_signals, 2) * 100
 
+        fundamentals_output = FundamentalsSignal(
+            signal=overall_signal,
+            confidence=confidence,
+            reasoning=reasoning,
+        )
         fundamental_analysis[ticker] = {
-            "signal": overall_signal,
-            "confidence": confidence,
-            "reasoning": reasoning,
+            "signal": fundamentals_output.signal,
+            "confidence": fundamentals_output.confidence,
+            "reasoning": fundamentals_output.reasoning,
         }
 
         progress.update_status(agent_id, ticker, "Done", analysis=json.dumps(reasoning, indent=4))
