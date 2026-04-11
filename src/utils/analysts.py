@@ -30,6 +30,7 @@ ANALYST_CONFIG = {
         "agent_func": aswath_damodaran_agent,
         "type": "analyst",
         "order": 0,
+        "slash_command": "/damodaran",
         "trigger": "Use when performing DCF or intrinsic value analysis, estimating cost of capital (WACC/CAPM), or comparing relative valuation multiples across sectors.",
     },
     "ben_graham": {
@@ -39,6 +40,7 @@ ANALYST_CONFIG = {
         "agent_func": ben_graham_agent,
         "type": "analyst",
         "order": 1,
+        "slash_command": "/graham",
         "trigger": "Use when screening for undervalued stocks with a margin of safety, analyzing earnings stability, or evaluating conservative financial strength criteria.",
     },
     "bill_ackman": {
@@ -48,6 +50,7 @@ ANALYST_CONFIG = {
         "agent_func": bill_ackman_agent,
         "type": "analyst",
         "order": 2,
+        "slash_command": "/ackman",
         "trigger": "Use when analyzing companies with potential for activist intervention, corporate restructuring opportunities, or hidden value that can be unlocked through strategic changes.",
     },
     "cathie_wood": {
@@ -57,6 +60,7 @@ ANALYST_CONFIG = {
         "agent_func": cathie_wood_agent,
         "type": "analyst",
         "order": 3,
+        "slash_command": "/cathie",
         "trigger": "Use when evaluating disruptive technology stocks, innovation-driven companies (AI, genomics, fintech, robotics), or high-growth sectors with exponential potential.",
     },
     "charlie_munger": {
@@ -66,6 +70,7 @@ ANALYST_CONFIG = {
         "agent_func": charlie_munger_agent,
         "type": "analyst",
         "order": 4,
+        "slash_command": "/munger",
         "trigger": "Use when evaluating business quality using mental models, assessing competitive moats, management integrity, or applying rational multi-disciplinary analysis.",
     },
     "michael_burry": {
@@ -75,6 +80,7 @@ ANALYST_CONFIG = {
         "agent_func": michael_burry_agent,
         "type": "analyst",
         "order": 5,
+        "slash_command": "/burry",
         "trigger": "Use when looking for contrarian or short opportunities, detecting overvalued markets, analyzing distressed assets, or identifying systemic risks and bubbles.",
     },
     "mohnish_pabrai": {
@@ -84,6 +90,7 @@ ANALYST_CONFIG = {
         "agent_func": mohnish_pabrai_agent,
         "type": "analyst",
         "order": 6,
+        "slash_command": "/pabrai",
         "trigger": "Use when seeking low-risk high-reward asymmetric bets, cloning successful investor strategies, or evaluating simple businesses with durable competitive advantages.",
     },
     "nassim_taleb": {
@@ -93,6 +100,7 @@ ANALYST_CONFIG = {
         "agent_func": nassim_taleb_agent,
         "type": "analyst",
         "order": 7,
+        "slash_command": "/taleb",
         "trigger": "Use when assessing tail risk exposure, evaluating antifragility of a company, building barbell portfolios, or seeking convex positions with limited downside and unlimited upside.",
     },
     "peter_lynch": {
@@ -102,6 +110,7 @@ ANALYST_CONFIG = {
         "agent_func": peter_lynch_agent,
         "type": "analyst",
         "order": 8,
+        "slash_command": "/lynch",
         "trigger": "Use when searching for growth at a reasonable price (GARP), classifying stocks by category (stalwart, fast grower, turnaround), or evaluating PEG ratios and earnings growth.",
     },
     "phil_fisher": {
@@ -111,6 +120,7 @@ ANALYST_CONFIG = {
         "agent_func": phil_fisher_agent,
         "type": "analyst",
         "order": 9,
+        "slash_command": "/fisher",
         "trigger": "Use when evaluating management quality, R&D effectiveness, product innovation pipeline, or performing qualitative scuttlebutt analysis on competitive positioning.",
     },
     "rakesh_jhunjhunwala": {
@@ -120,6 +130,7 @@ ANALYST_CONFIG = {
         "agent_func": rakesh_jhunjhunwala_agent,
         "type": "analyst",
         "order": 10,
+        "slash_command": "/rakesh",
         "trigger": "Use when analyzing emerging market opportunities, macro-driven sector bets, domestic consumption themes, or high-growth cyclical sectors with strong tailwinds.",
     },
     "stanley_druckenmiller": {
@@ -129,6 +140,7 @@ ANALYST_CONFIG = {
         "agent_func": stanley_druckenmiller_agent,
         "type": "analyst",
         "order": 11,
+        "slash_command": "/druckenmiller",
         "trigger": "Use when analyzing macroeconomic trends, interest rate impacts, currency movements, commodity cycles, or making top-down sector allocation decisions.",
     },
     "warren_buffett": {
@@ -138,6 +150,7 @@ ANALYST_CONFIG = {
         "agent_func": warren_buffett_agent,
         "type": "analyst",
         "order": 12,
+        "slash_command": "/buffett",
         "trigger": "Use when evaluating durable competitive moats, owner earnings, return on equity consistency, or assessing long-term compounding potential of high-quality businesses.",
     },
     "technical_analyst": {
@@ -147,6 +160,7 @@ ANALYST_CONFIG = {
         "agent_func": technical_analyst_agent,
         "type": "analyst",
         "order": 13,
+        "slash_command": "/technical",
         "trigger": "Use when analyzing price trends, chart patterns, momentum indicators (RSI, MACD, Bollinger Bands), or determining entry/exit timing based on technical signals.",
     },
     "fundamentals_analyst": {
@@ -156,6 +170,7 @@ ANALYST_CONFIG = {
         "agent_func": fundamentals_analyst_agent,
         "type": "analyst",
         "order": 14,
+        "slash_command": "/fundamentals",
         "trigger": "Use when analyzing profitability ratios (ROE, margins), financial health (debt, liquidity), growth metrics, or screening stocks by fundamental valuation ratios (P/E, P/B, P/S).",
     },
     "growth_analyst": {
@@ -165,6 +180,7 @@ ANALYST_CONFIG = {
         "agent_func": growth_analyst_agent,
         "type": "analyst",
         "order": 15,
+        "slash_command": "/growth",
         "trigger": "Use when evaluating revenue/earnings growth trends, PEG ratios, margin expansion trajectories, insider conviction signals, or assessing growth sustainability.",
     },
     "news_sentiment_analyst": {
@@ -174,6 +190,7 @@ ANALYST_CONFIG = {
         "agent_func": news_sentiment_agent,
         "type": "analyst",
         "order": 16,
+        "slash_command": "/news",
         "trigger": "Use when analyzing recent news headlines for sentiment (positive/negative/neutral), detecting market-moving events, or gauging media perception of a stock.",
     },
     "sentiment_analyst": {
@@ -183,6 +200,7 @@ ANALYST_CONFIG = {
         "agent_func": sentiment_analyst_agent,
         "type": "analyst",
         "order": 17,
+        "slash_command": "/sentiment",
         "trigger": "Use when analyzing insider trading patterns (buy/sell ratios), combining insider activity with news sentiment, or detecting institutional conviction shifts.",
     },
     "valuation_analyst": {
@@ -192,6 +210,7 @@ ANALYST_CONFIG = {
         "agent_func": valuation_analyst_agent,
         "type": "analyst",
         "order": 18,
+        "slash_command": "/valuation",
         "trigger": "Use when performing multi-method valuation (DCF, owner earnings, EV/EBITDA, residual income), calculating WACC, or running scenario-based fair value estimates.",
     },
 }
@@ -213,8 +232,18 @@ def get_agents_list():
             "display_name": config["display_name"],
             "description": config["description"],
             "investing_style": config["investing_style"],
+            "slash_command": config["slash_command"],
             "trigger": config["trigger"],
             "order": config["order"],
         }
         for key, config in sorted(ANALYST_CONFIG.items(), key=lambda x: x[1]["order"])
     ]
+
+
+def get_analyst_by_slash_command(command: str) -> str | None:
+    """Look up an analyst key by its slash command (e.g. '/buffett' -> 'warren_buffett')."""
+    cmd = command if command.startswith("/") else f"/{command}"
+    for key, config in ANALYST_CONFIG.items():
+        if config["slash_command"] == cmd:
+            return key
+    return None
