@@ -1,0 +1,24 @@
+[llm]
+model = "claude-sonnet-4-20250514"
+api_key = ""          # set ANTHROPIC_API_KEY env var or fill here
+base_url = "https://api.anthropic.com"
+max_tokens = 4096
+temperature = 0.1
+
+[extraction]
+default_strategy = "auto"    # auto | pymupdf4llm | marker
+marker_langs = "tha,eng"
+use_llm_for_mda_fallback = true
+
+[graph]
+use_inference = false         # keep false for financial text (reduces noise)
+use_standardization = true
+chunk_size = 150
+overlap = 20
+
+[paths]
+input_dir = "data/input"
+wiki_output = "data/output/wiki"
+graph_output = "data/output/graphs"
+log_dir = "data/output/logs"
+ai_knowledge_graph_dir = "../ai-knowledge-graph"

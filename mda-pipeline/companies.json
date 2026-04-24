@@ -1,0 +1,18 @@
+{
+  "companies": [
+    {
+      "ticker": "CPALL",
+      "year": 2024,
+      "pdf_path": "data/input/cpall_ar_2024.pdf",
+      "language": "th",
+      "source": "company_ir"
+    },
+    {
+      "ticker": "AOT",
+      "year": 2024,
+      "pdf_path": "data/input/aot_ar_2024.pdf",
+      "language": "en",
+      "source": "bloomberg"
+    }
+  ]
+}
