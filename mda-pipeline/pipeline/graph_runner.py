@@ -1,145 +1,305 @@
-"""Phase 3B: Generate SPO knowledge graph via ai-knowledge-graph/generate-graph.py."""
+"""
+Phase 3B: Extract SPO triples from MD&A text and generate a knowledge graph.
 
+Uses Anthropic directly (no LiteLLM proxy needed) + networkx + pyvis for
+HTML visualization. Output format is compatible with ai-knowledge-graph JSON.
+"""
+
+import json
 import logging
-import os
-import shutil
-import subprocess
-import tempfile
+import re
+import textwrap
 from pathlib import Path
+
+import networkx as nx
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# SPO extraction via Claude
+# ---------------------------------------------------------------------------
 
-def _find_generate_graph(ai_kg_dir: str) -> Path:
-    candidates = [
-        Path(ai_kg_dir) / "generate-graph.py",
-        Path(ai_kg_dir) / "generate_graph.py",
-        Path(ai_kg_dir) / "src" / "generate-graph.py",
-    ]
-    for c in candidates:
-        if c.exists():
-            return c
-    raise FileNotFoundError(
-        f"generate-graph.py not found under {ai_kg_dir}. "
-        "Clone the repo: git clone https://github.com/robert-mcdermott/ai-knowledge-graph"
+_SPO_SYSTEM = """\
+You are a financial knowledge graph extractor. Extract Subject-Predicate-Object (SPO) triples
+from the text. Focus on:
+- Revenue and profit relationships (company, revenue, amount)
+- Business drivers and their effects
+- Forward guidance and targets
+- Risk factors and their impacts
+
+Return ONLY a JSON array of triples. Each triple is an object with keys:
+  "subject", "predicate", "object"
+
+Rules:
+- Subjects and objects should be concise noun phrases (≤5 words)
+- Predicates should be verb phrases (≤4 words)
+- No duplicates
+- 20–80 triples total
+- Numbers are OK as objects (e.g. "650,000 ล้านบาท")
+
+Example:
+[
+  {"subject": "CPALL", "predicate": "มีรายได้รวม", "object": "650,000 ล้านบาท"},
+  {"subject": "7-Eleven", "predicate": "เติบโต", "object": "7.5%"}
+]"""
+
+_SPO_CHUNK_WORDS = 150
+_SPO_OVERLAP_WORDS = 20
+
+
+def _chunk_text(text: str, chunk_words: int = _SPO_CHUNK_WORDS, overlap: int = _SPO_OVERLAP_WORDS) -> list[str]:
+    words = text.split()
+    chunks = []
+    i = 0
+    while i < len(words):
+        chunk = words[i: i + chunk_words]
+        chunks.append(" ".join(chunk))
+        i += chunk_words - overlap
+    return chunks
+
+
+def _extract_json_array(text: str) -> list[dict]:
+    """Pull the first JSON array out of a Claude response."""
+    match = re.search(r"\[.*?\]", text, re.DOTALL)
+    if not match:
+        return []
+    try:
+        return json.loads(match.group(0))
+    except json.JSONDecodeError:
+        return []
+
+
+def _is_valid_triple(t: dict) -> bool:
+    return (
+        isinstance(t, dict)
+        and all(k in t for k in ("subject", "predicate", "object"))
+        and all(isinstance(t[k], str) and t[k].strip() for k in ("subject", "predicate", "object"))
     )
 
 
-def _write_mda_txt(mda_text: str, ticker: str, year: int, tmp_dir: str) -> Path:
-    """Save MDA as .txt (generate-graph.py does not accept .md)."""
-    txt_path = Path(tmp_dir) / f"{ticker}_{year}_mda.txt"
-    txt_path.write_text(mda_text, encoding="utf-8")
-    return txt_path
-
-
-def _patch_kg_config(ai_kg_dir: str, model: str, api_key: str) -> str:
+def extract_spo_triples(
+    mda_text: str,
+    ticker: str,
+    client,
+    model: str = "claude-sonnet-4-20250514",
+    max_tokens: int = 2048,
+    chunk_words: int = _SPO_CHUNK_WORDS,
+    overlap: int = _SPO_OVERLAP_WORDS,
+) -> list[dict]:
     """
-    Ensure the ai-knowledge-graph config.toml points to Claude via LiteLLM
-    (not Ollama). Returns path to the config file used.
-
-    We write a temporary config file and pass it via env/flag rather than
-    modifying the repo's own config.toml in place.
+    Extract SPO triples from mda_text by chunking and calling Claude per chunk.
+    Returns a deduplicated list of triple dicts.
     """
-    config_content = f"""\
-[model]
-name = "{model}"
-api_key = "{api_key}"
+    chunks = _chunk_text(mda_text, chunk_words, overlap)
+    logger.info("SPO extraction: %d chunks, ticker=%s, model=%s", len(chunks), ticker, model)
 
-[graph]
-inference = false
-standardize = true
-chunk_size = 150
-overlap = 20
-"""
-    cfg_path = Path(ai_kg_dir) / "_pipeline_config.toml"
-    cfg_path.write_text(config_content, encoding="utf-8")
-    return str(cfg_path)
+    all_triples: list[dict] = []
+    seen: set[tuple] = set()
 
+    for idx, chunk in enumerate(chunks):
+        prompt = (
+            f"Extract SPO triples from this MD&A excerpt of {ticker}:\n\n"
+            f"---\n{chunk}\n---\n\n"
+            "Return JSON array only."
+        )
+        try:
+            response = client.messages.create(
+                model=model,
+                max_tokens=max_tokens,
+                system=_SPO_SYSTEM,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            raw = response.content[0].text
+            triples = _extract_json_array(raw)
+
+            for t in triples:
+                if not _is_valid_triple(t):
+                    continue
+                key = (t["subject"].strip(), t["predicate"].strip(), t["object"].strip())
+                if key not in seen:
+                    seen.add(key)
+                    all_triples.append({
+                        "subject": key[0],
+                        "predicate": key[1],
+                        "object": key[2],
+                    })
+
+            logger.debug("Chunk %d/%d → %d triples", idx + 1, len(chunks), len(triples))
+
+        except Exception as exc:
+            logger.warning("SPO extraction failed on chunk %d: %s", idx + 1, exc)
+            continue
+
+    logger.info("Total unique SPO triples: %d", len(all_triples))
+    return all_triples
+
+
+# ---------------------------------------------------------------------------
+# Graph visualization with pyvis
+# ---------------------------------------------------------------------------
+
+def _build_graph(triples: list[dict]) -> nx.DiGraph:
+    G = nx.DiGraph()
+    for t in triples:
+        s, p, o = t["subject"], t["predicate"], t["object"]
+        G.add_node(s)
+        G.add_node(o)
+        G.add_edge(s, o, label=p)
+    return G
+
+
+def _node_color(node: str, ticker: str) -> str:
+    if node.upper() == ticker.upper():
+        return "#e63946"      # red for main company
+    # Heuristic: numbers → green, Thai text → blue, English → orange
+    if re.search(r"\d", node):
+        return "#2a9d8f"
+    if any("฀" <= ch <= "๿" for ch in node):
+        return "#457b9d"
+    return "#f4a261"
+
+
+def build_html_graph(
+    triples: list[dict],
+    ticker: str,
+    year: int,
+    output_path: str,
+) -> Path:
+    """Render triples as an interactive pyvis HTML graph."""
+    try:
+        from pyvis.network import Network
+    except ImportError as exc:
+        raise RuntimeError("pip install pyvis") from exc
+
+    net = Network(
+        height="800px",
+        width="100%",
+        bgcolor="#0d1117",
+        font_color="#e6edf3",
+        directed=True,
+        notebook=False,
+    )
+    net.set_options(textwrap.dedent("""\
+        {
+          "nodes": {
+            "font": {"size": 12, "face": "Arial"},
+            "borderWidth": 2,
+            "shadow": true
+          },
+          "edges": {
+            "arrows": {"to": {"enabled": true}},
+            "font": {"size": 10, "align": "middle"},
+            "smooth": {"type": "curvedCW", "roundness": 0.2}
+          },
+          "physics": {
+            "barnesHut": {"gravitationalConstant": -8000, "springLength": 120},
+            "stabilization": {"iterations": 200}
+          }
+        }
+    """))
+
+    G = _build_graph(triples)
+    added_nodes: set[str] = set()
+
+    for t in triples:
+        s, p, o = t["subject"], t["predicate"], t["object"]
+        for node in (s, o):
+            if node not in added_nodes:
+                net.add_node(
+                    node,
+                    label=node[:40],
+                    title=node,
+                    color=_node_color(node, ticker),
+                    size=20 if node.upper() == ticker.upper() else 12,
+                )
+                added_nodes.add(node)
+        net.add_edge(s, o, title=p, label=p[:30], color="#8b949e")
+
+    out = Path(output_path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+
+    # Inject a title banner into the HTML
+    net.html = (
+        f"<h3 style='color:#e6edf3;font-family:Arial;padding:8px;margin:0;"
+        f"background:#161b22'>{ticker} {year} — MD&A Knowledge Graph"
+        f" ({len(triples)} triples)</h3>\n"
+    )
+
+    net.save_graph(str(out))
+    logger.info("Graph HTML saved: %s (%d nodes, %d edges)", out, G.number_of_nodes(), G.number_of_edges())
+    return out
+
+
+# ---------------------------------------------------------------------------
+# JSON output (ai-knowledge-graph compatible format)
+# ---------------------------------------------------------------------------
+
+def save_json(triples: list[dict], ticker: str, year: int, json_path: str) -> Path:
+    payload = {
+        "ticker": ticker,
+        "year": year,
+        "triple_count": len(triples),
+        "triples": triples,
+    }
+    out = Path(json_path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    logger.info("Graph JSON saved: %s", out)
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Public interface
+# ---------------------------------------------------------------------------
 
 def run_knowledge_graph(
     mda_text: str,
     ticker: str,
     year: int,
     output_dir: str,
-    ai_kg_dir: str,
+    client,
     model: str = "claude-sonnet-4-20250514",
-    api_key: str = "",
-    use_inference: bool = False,
+    api_key: str = "",           # kept for signature compat; client already has key
+    use_inference: bool = False,  # reserved for future use
     chunk_size: int = 150,
     overlap: int = 20,
+    **_,                          # absorb any extra kwargs
 ) -> tuple[Path, Path]:
     """
-    Generate SPO knowledge graph from *mda_text*.
+    Extract SPO triples from mda_text and write HTML + JSON outputs.
 
     Parameters
     ----------
-    mda_text : str      MD&A section text
+    mda_text : str
     ticker : str
     year : int
-    output_dir : str    Where to write {TICKER}_{YEAR}_mda.html / .json
-    ai_kg_dir : str     Path to cloned ai-knowledge-graph repo
-    model : str         Claude model for SPO extraction
-    api_key : str       Anthropic API key
-    use_inference : bool  Pass --inference flag (default False)
-    chunk_size : int
-    overlap : int
+    output_dir : str
+    client       anthropic.Anthropic instance
+    model : str
+    chunk_size : int   words per chunk
+    overlap : int      word overlap between chunks
 
     Returns
     -------
     (html_path, json_path)
     """
-    script = _find_generate_graph(ai_kg_dir)
-    output_dir_path = Path(output_dir)
-    output_dir_path.mkdir(parents=True, exist_ok=True)
-
     stem = f"{ticker.upper()}_{year}_mda"
+    html_path = str(Path(output_dir) / f"{stem}.html")
+    json_path = str(Path(output_dir) / f"{stem}.json")
 
-    with tempfile.TemporaryDirectory() as tmp:
-        txt_path = _write_mda_txt(mda_text, ticker, year, tmp)
+    triples = extract_spo_triples(
+        mda_text=mda_text,
+        ticker=ticker,
+        client=client,
+        model=model,
+        chunk_words=chunk_size,
+        overlap=overlap,
+    )
 
-        cmd = [
-            "python",
-            str(script),
-            "--input", str(txt_path),
-            "--output", str(output_dir_path / stem),
-            "--model", model,
-            "--chunk-size", str(chunk_size),
-            "--overlap", str(overlap),
-        ]
-        if not use_inference:
-            cmd.append("--no-inference")
+    if not triples:
+        raise RuntimeError(f"No SPO triples extracted for {ticker} {year}")
 
-        env = os.environ.copy()
-        if api_key:
-            env["ANTHROPIC_API_KEY"] = api_key
+    html_out = build_html_graph(triples, ticker, year, html_path)
+    json_out = save_json(triples, ticker, year, json_path)
 
-        logger.info("Running generate-graph.py for %s %d: %s", ticker, year, " ".join(cmd))
-        result = subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=600)
-
-        if result.returncode != 0:
-            raise RuntimeError(
-                f"generate-graph.py failed (rc={result.returncode}): {result.stderr[:500]}"
-            )
-
-    # Discover output files — the script may name them slightly differently
-    html_candidates = list(output_dir_path.glob(f"{stem}*.html"))
-    json_candidates = list(output_dir_path.glob(f"{stem}*.json"))
-
-    if not html_candidates or not json_candidates:
-        raise RuntimeError(
-            f"generate-graph.py ran but expected output files not found in {output_dir_path}"
-        )
-
-    html_path = html_candidates[0]
-    json_path = json_candidates[0]
-
-    # Normalise names to our convention
-    final_html = output_dir_path / f"{stem}.html"
-    final_json = output_dir_path / f"{stem}.json"
-    if html_path != final_html:
-        shutil.move(str(html_path), str(final_html))
-    if json_path != final_json:
-        shutil.move(str(json_path), str(final_json))
-
-    logger.info("Graph files saved: %s, %s", final_html, final_json)
-    return final_html, final_json
+    return html_out, json_out
