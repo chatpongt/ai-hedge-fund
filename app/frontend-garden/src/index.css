@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Sarabun', sans-serif;
+  background-color: #f8fafc;
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-4;
+  }
+  .btn-primary {
+    @apply bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition-colors;
+  }
+  .btn-secondary {
+    @apply bg-white hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 rounded-lg border border-gray-200 transition-colors;
+  }
+  .badge-urgent { @apply bg-red-100 text-red-700 text-xs font-medium px-2 py-0.5 rounded-full; }
+  .badge-high   { @apply bg-orange-100 text-orange-700 text-xs font-medium px-2 py-0.5 rounded-full; }
+  .badge-medium { @apply bg-yellow-100 text-yellow-700 text-xs font-medium px-2 py-0.5 rounded-full; }
+  .badge-low    { @apply bg-gray-100 text-gray-600 text-xs font-medium px-2 py-0.5 rounded-full; }
+}
